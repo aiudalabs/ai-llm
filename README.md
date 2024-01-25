@@ -1,5 +1,7 @@
 # AI and LLM Exploration Repository
 
+[![Python package](https://github.com/aiudalabs/ai-llm/actions/workflows/python-package.yml/badge.svg?branch=main)](https://github.com/aiudalabs/ai-llm/actions/workflows/python-package.yml)
+
 ## Overview
 Welcome to my AI and LLM Exploration Repository. This space is dedicated to sharing my ongoing work, experiments, and findings in the realm of Artificial Intelligence (AI) and Large Language Models (LLM). As a seasoned data scientist, I leverage this platform to explore the cutting-edge advancements in AI and LLM technologies, sharing practical demos, test cases, and insightful analyses.
 
