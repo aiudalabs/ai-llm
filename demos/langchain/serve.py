@@ -1,12 +1,4 @@
 #!/usr/bin/env python
-
-from dotenv import load_dotenv
-import os
-
-load_dotenv()  # take environment variables from .env.
-
-api_key = os.getenv("OPENAI_API_KEY")
-
 from typing import List
 
 from fastapi import FastAPI
@@ -15,10 +7,9 @@ from langchain_openai import ChatOpenAI
 from langchain_community.document_loaders import WebBaseLoader
 from langchain_openai import OpenAIEmbeddings
 from langchain_community.vectorstores import FAISS
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain.tools.retriever import create_retriever_tool
 from langchain_community.tools.tavily_search import TavilySearchResults
-from langchain_openai import ChatOpenAI
 from langchain import hub
 from langchain.agents import create_openai_functions_agent
 from langchain.agents import AgentExecutor
@@ -27,9 +18,7 @@ from langchain_core.messages import BaseMessage
 from langserve import add_routes
 
 # 1. Load Retriever
-loader = WebBaseLoader(
-    "https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow"
-)
+loader = WebBaseLoader("https://docs.smith.langchain.com/user_guide")
 docs = loader.load()
 text_splitter = RecursiveCharacterTextSplitter()
 documents = text_splitter.split_documents(docs)
@@ -40,8 +29,8 @@ retriever = vector.as_retriever()
 # 2. Create Tools
 retriever_tool = create_retriever_tool(
     retriever,
-    "gitflow_search",
-    "Search for information about gitflow-workflow. For any questions about gitflow-workflow, you must use this tool!",
+    "langsmith_search",
+    "Search for information about LangSmith. For any questions about LangSmith, you must use this tool!",
 )
 search = TavilySearchResults()
 tools = [retriever_tool, search]
