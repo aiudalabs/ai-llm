@@ -17,6 +17,13 @@ from langchain.pydantic_v1 import BaseModel, Field
 from langchain_core.messages import BaseMessage
 from langserve import add_routes
 
+from dotenv import load_dotenv
+import os
+
+load_dotenv()  # take environment variables from .env.
+
+api_key = os.getenv("OPENAI_API_KEY")
+
 # 1. Load Retriever
 loader = WebBaseLoader("https://docs.smith.langchain.com/user_guide")
 docs = loader.load()
@@ -38,7 +45,7 @@ tools = [retriever_tool, search]
 
 # 3. Create Agent
 prompt = hub.pull("hwchase17/openai-functions-agent")
-llm = ChatOpenAI(model="gpt-3.5-turbo", temperature=0)
+llm = ChatOpenAI(openai_api_key=api_key, model="gpt-3.5-turbo", temperature=0)
 agent = create_openai_functions_agent(llm, tools, prompt)
 agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=True)
 
