@@ -53,7 +53,10 @@ graph_builder = StateGraph(State)
 # Functions Implementation
 @tool
 def fetch_user_information():
-    """Fetch the current user info based on the displayName of the user"""
+    """Fetch the current user info based on the displayName of the user.
+    Use this tools at the begining to know the user information and
+    interact with him/her using the real name.
+    """
 
     config = ensure_config()  # Fetch from the context
     configuration = config.get("configurable", {})
@@ -62,7 +65,13 @@ def fetch_user_information():
 
 @tool
 def get_service_provider_from_firebase(tag: str):
-    """Get service providers based on the tags or the name of the category"""
+    """Get all the service providers based on the tag
+    or the name of the category. Use this tool each time the user
+    request some information about a particular service.
+
+    Example: if the user ask about spa, then you use this tool with tag = spa
+    """
+
     profile = db.collection("profiles")
     print(tag)
     docs = profile.where("service.text", "==", tag).get()
@@ -71,27 +80,44 @@ def get_service_provider_from_firebase(tag: str):
 
 @tool
 def get_profile_info_from_firebase(name: str):
-    """Get profile info based on the name of the service provider"""
+    """Get profile info based on the name of the service provider.
+    Use this tool when the user want to know more details about
+    a particular service provider.
+
+    Example: tell me more about Carolina, or what is the rating of Arturo
+    """
+
     print(name)
     profile = db.collection("profiles")
 
     docs = profile.where("displayName", "==", name).get()
 
-    user_profile = docs[0].to_dict()
-    print(user_profile)
+    if len(docs) > 0:
+        user_profile = docs[0].to_dict()
+        print(user_profile)
 
-    if user_profile["location"] is not None:
-        user_profile["location"] = {
-            "lat": docs[0].to_dict()["location"].latitude,
-            "long": docs[0].to_dict()["location"].longitude,
-        }
+        if user_profile["location"] is not None:
+            user_profile["location"] = {
+                "lat": docs[0].to_dict()["location"].latitude,
+                "long": docs[0].to_dict()["location"].longitude,
+            }
 
-    return user_profile
+        return user_profile
+    else:
+        return None
 
 
 @tool
 def get_yomap_service_categories():
-    """Get list of service categories from the database"""
+    """Get list of service categories from the database.
+    Use this tool each time you need to know all the categories (services)
+    on the database. Use this tool also if the user want to know about the
+    services in the app.
+    You can use this tool when the user is requesting for something and you can't
+    find any service provider, in that case you can search for similar services.
+
+    Example: the user request for plumber by you have handyman or plomero.
+    """
     tags_ref = (
         db.collection("tags")
         .where("usedBy", ">=", 1)
@@ -151,8 +177,8 @@ class Assistant:
     def __call__(self, state: State, config: RunnableConfig):
         while True:
             configuration = config.get("configurable", {})
-            passenger_id = configuration.get("passenger_id", None)
-            state = {**state, "user_info": passenger_id}
+            user_name = configuration.get("user_name", None)
+            state = {**state, "user_info": user_name}
             result = self.runnable.invoke(state)
             # If the LLM happens to return an empty response, we will re-prompt it
             # for an actual response.
@@ -180,6 +206,11 @@ primary_assistant_prompt = ChatPromptTemplate.from_messages(
             " Use the provided tools to search for categories, service providers, and other information to assist the user's queries. "
             " When searching, be persistent. Expand your query bounds if the first search returns no results. "
             " If a search comes up empty, expand your search before giving up."
+            " In some cases the user can ask questions where you need to run some tools many times and then agregate the information. "
+            " Example: what is the mean rating of the spa service providers. In this case you need to get the spa service providers first, "
+            " then get the info of each of them to get the rating and then compute the mean value of the rating. "
+            " If the return of some functions/tools is empyt or Error: IndexError('list index out of range') please ignore it and use "
+            " the other results to provide de answer."
             "\n\nCurrent user:\n<User>\n{user_info}\n</User>"
             "\nCurrent time: {time}.",
         ),
