@@ -14,7 +14,7 @@ from langchain_openai import ChatOpenAI
 # %%
 from fastapi import FastAPI
 from langserve import add_routes
-from langserve.pydantic_v1 import BaseModel, Field
+# from langserve.pydantic_v1 import BaseModel, Field
 
 # %%
 from dotenv import load_dotenv
